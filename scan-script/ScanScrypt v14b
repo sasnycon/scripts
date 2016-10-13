@@ -1,0 +1,76 @@
+#!/bin/bash
+# Sasnycon's Scan Script Version 0.14 Beta
+
+echo
+echo '==========================='
+echo '| scan_Script_by_SasnycoN |'
+echo '==========================='
+echo
+echo 'Catching user dir..'
+STARTING_DIR=$(pwd)
+echo
+echo 'Creating results output dir...'
+mkdir scanResults
+echo 'Done!'
+echo
+echo 'Checking the integrity of the main index.php files...'
+ionice -c3 nice find $STARTING_DIR -path "*/public_html/index.php" 2>/dev/null -exec md5sum {} + | grep -v '^b61b25303be0f573a6b9446d5cbe3a5b' > scanResults/core_index
+ionice -c3 nice find $STARTING_DIR -path "*/public_html/wp-content/themes/twentysixteen/index.php" 2>/dev/null -exec md5sum {} + | grep -v '^e892c7110a2cbfcaaa25a0dc4e832a19' > scanResults/2016_index
+ionice -c3 nice find $STARTING_DIR -path "*/public_html/wp-content/themes/twentyfifteen/index.php" 2>/dev/null -exec md5sum {} + | grep -v '^84c9b262ae5a4b939e934bad57d8ee3a' > scanResults/2015_index
+ionice -c3 nice find $STARTING_DIR -path "*/public_html/wp-content/themes/twentyfourteen/index.php" 2>/dev/null -exec md5sum {} + | grep -v '^015e97abd72a9d31ba1e78f7a2d3b623' > scanResults/2014_index
+echo 'Done!'
+echo
+echo 'Looking for php files in all 'uploads' dirs'
+echo '(All index.php files will be excluded!)'
+ionice -c3 nice find $STARTING_DIR -path '*/uploads/*.php' ! -path '*/cache/*' ! -name 'index.php' ! -name '*sucuri*' ! -name '*backupbuddy*' 2>/dev/null > scanResults/uploads
+echo 'Done!'
+echo
+echo 'Looking for some base64_decode combinations...'
+echo '(Because of posible long code-lines you will get only the name of the files! Please check them manually!)'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'edoced_46esab\|eval(base64_decode\|gzinflate(base64_decode\|eval(gzuncompress(base64_decode'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/base64
+echo 'Done!'
+echo
+echo 'Initializing "strTo" Patterns Scan...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH '=strtoupper\|$ua=strtolower' {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/strTo
+echo 'Done!'
+echo
+echo 'Looking for strange md5s...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'md5($_SERVER' {} + | grep -v 'MINIFY*' >> scanResults/md5s
+echo
+echo 'Done!'
+echo
+echo 'Looking for strange chr(97)...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'chr(97)'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/chr97
+echo 'Done!'
+echo
+echo 'Looking for "str_rot13" uses...'
+echo '(Because of posible long code-lines you will get only the name of the files! Please check them manually!)'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'str_rot13' {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/str_rot13
+echo 'Done!'
+echo
+echo 'Looking if anyone is cooking any cookies...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'WSOsetcookie' {} + > scanResults/cookieeees
+echo 'Done!'
+echo
+echo 'Looking for other uncommon patterns...'
+ionice -c3 nice find $STARTING_DIR type f ! -name 'readme.txt' ! -name 'class-tgm-plugin-activation.php' ! -name '*.pot' ! -name '*.xml' ! -name '*audio*' ! -name '*.csv' ! -name '*.js' ! -path '*/plugins/backwpup/*' ! -path '*/plugins/wordfence*' ! -path '*/wp-includes/vars.php' ! -path '*sucuri*' ! -path '*/plugins/postman-smtp*' ! -path '*updraft*' 2>/dev/null -exec grep -nH 'b374k\|onfr64_qrpbqr\|hacked\|Hacked\|was here\|Was Here\| Was here\|r0nin\|m0rtix\|upl0ad\|r57shell\|c99shell\|shellbot\|phpshell\|void\.ru\|phpremoteview\|directmail\|bash_history\|cwings\|vandal\|Hackeado\|Janissaries\|Miyachung\|ccteam\|Adminer\|OOO000000' {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/paterns
+ionice -c3 nice find $STARTING_DIR type f ! -name 'readme.txt' ! -name 'class-tgm-plugin-activation.php' ! -name '*.pot' ! -name '*.xml' ! -name '*audio*' ! -name '*.csv' ! -name '*.js' ! -path '*/plugins/backwpup/*' ! -path '*/plugins/wordfence*' ! -path '*/wp-includes/vars.php' ! -path '*sucuri*' ! -path '*/plugins/postman-smtp*' ! -path '*updraft*' 2>/dev/null -exec grep -nH 'NG689Skw\|bitchx\|eggdrop\|guardservices\|psybnc\|dalnet\|undernet\|vulnscan\|spymeta\|raslan58\|Webshell\|FilesMan\|FilesTools\|Web Shell\|ifrm\|bckdrprm\|hackmeplz\|wrgggthhd\|Hmei7\|Inbox Mass Mailer\|HackTeam\|makeret\.ru\|ionice -c3 nice findsysfolder' {} + |awk -F ":" '{print $1" - Line number : "$2}' >> scanResults/paterns
+echo 'Done!'
+echo
+echo 'Looking for cryptoPHP backdoor...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.png*' 2>/dev/null |xargs file |grep "PHP \| asci"  > scanResults/criptoPHP
+ionice -c3 nice find $STARTING_DIR -type f -name '*.jp*' 2>/dev/null |xargs file |grep "PHP \| asci"  >> scanResults/criptoPHP
+echo 'Done!'
+echo
+echo 'Looking for C99 backdoor...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'c999sh_surl' {} + > scanResults/C99
+echo 'Done!'
+echo
+echo 'Looking for R57 backdoor...'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH '(preg_match("/bot/"' {} +  > scanResults/R57
+echo 'Done!'
+echo
+echo 'SCAN FINISHED'
+echo
+echo 'The quieter you become, the more you are able to hear...'
+echo
