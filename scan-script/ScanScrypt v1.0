@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sasnycon's Scan Script Version 0.14 Beta
+# Sasnycon's Scan Script Version 1.0
 
 echo
 echo '==========================='
@@ -27,7 +27,13 @@ echo 'Done!'
 echo
 echo 'Looking for some base64_decode combinations...'
 echo '(Because of posible long code-lines you will get only the name of the files! Please check them manually!)'
-ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'edoced_46esab\|eval(base64_decode\|gzinflate(base64_decode\|eval(gzuncompress(base64_decode'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/base64
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'edoced_46esab\|eval(base64_decode\|gzinflate(base64_decode\|eval(gzuncompress(base64_decode'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/base64-variations
+echo 'Done!'
+echo
+echo 'Looking only for base64_decode inside your files'
+echo 'This will probobly return a lot of false-positives due to comon use of base64_encoding regarding WordPress\' recommendations'
+echo '(Because of posible long code-lines you will get only the name of the files! Please check them manually!)'
+ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'base64_decode'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/base64-only
 echo 'Done!'
 echo
 echo 'Initializing "strTo" Patterns Scan...'
