@@ -31,7 +31,7 @@ ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep
 echo 'Done!'
 echo
 echo 'Looking only for base64_decode inside your files'
-echo 'This will probobly return a lot of false-positives due to comon use of base64_encoding regarding WordPress\' recommendations'
+echo 'This will probobly return a lot of false-positives due to comon use of base64_encoding regarding WordPress recommendations'
 echo '(Because of posible long code-lines you will get only the name of the files! Please check them manually!)'
 ionice -c3 nice find $STARTING_DIR -type f -name '*.php*' 2>/dev/null -exec grep -nH 'base64_decode'  {} + |awk -F ":" '{print $1" - Line number : "$2}' > scanResults/base64-only
 echo 'Done!'
