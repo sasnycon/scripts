@@ -1,31 +1,31 @@
--#!/bin/bash
--date_dir=$(date +%Y/%b/%d-%A/%I%p)
--date_time=$(date +%Y-%b-%d-%A-%I%p)
--mkdir -p /backups/$date_dir/
--
--#copy old time.txt to time2.txt
--
--yes | cp /backups/date_dir.txt /backups/date_dir2.txt
--yes | cp /backups/date_time.txt /backups/date_time2.txt
--
--#overwrite old time.txt file with new time
--
--echo $date_time > /backups/date_time.txt
--echo $date_dir > /backups/date_dir.txt
--
--#make the log file
--
--echo “” > /backups/rsync-`cat /backups/date_time.txt`.log
--
--#Prepare the directoryies
--
--ssh -p 1234 user@123.123.123.123 mkdir -p /backups/`cat /backups/date_dir.txt`
--
--#rsync command
--
--rsync -avzhPR --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --delete --stats --log-file=/backups/rsync-`cat /backups/date_time.txt`.log --exclude-from '/backups/exclude.txt' --link-dest=/backups/`cat /backups/date_dir2.txt` -e 'ssh -p 22' /var/www/html/whmcs/ root@10.131.23.96:/back
--ups/`cat /backups/date_dir.txt`
--
--#don’t forget to scp the log file and put it with the backup
--
--scp -P 22 /backups/rsync-`cat /backups/date_time.txt`.log user@123.123.123.123:/backups/`cat /backups/date_dir.txt`/rsync-`cat /backups/date_time.txt`.log
+#!/bin/bash
+date_dir=$(date +%Y/%b/%d-%A/%I%p)
+date_time=$(date +%Y-%b-%d-%A-%I%p)
+mkdir -p /backups/$date_dir/
+
+#copy old time.txt to time2.txt
+
+yes | cp /backups/date_dir.txt /backups/date_dir2.txt
+yes | cp /backups/date_time.txt /backups/date_time2.txt
+
+#overwrite old time.txt file with new time
+
+echo $date_time > /backups/date_time.txt
+echo $date_dir > /backups/date_dir.txt
+
+#make the log file
+
+echo “” > /backups/rsync-`cat /backups/date_time.txt`.log
+
+#Prepare the directoryies
+
+ssh -p 1234 user@123.123.123.123 mkdir -p /backups/`cat /backups/date_dir.txt`
+
+#rsync command
+
+rsync -avzhPR --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r --delete --stats --log-file=/backups/rsync-`cat /backups/date_time.txt`.log --exclude-from '/backups/exclude.txt' --link-dest=/backups/`cat /backups/date_dir2.txt` -e 'ssh -p 22' /var/www/html/whmcs/ root@10.131.23.96:/back
+ups/`cat /backups/date_dir.txt`
+
+#don’t forget to scp the log file and put it with the backup
+
+scp -P 22 /backups/rsync-`cat /backups/date_time.txt`.log user@123.123.123.123:/backups/`cat /backups/date_dir.txt`/rsync-`cat /backups/date_time.txt`.log
