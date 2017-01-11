@@ -1,0 +1,10 @@
+#!/bin/bash
+# md5 Hash Check and compare v0.1A
+
+wpVersion=`find . -type f -name "readme.html" -exec grep -h '<br /> Version' {} + | awk -F " " '{print $4}'`
+echo $wpVersion
+mkdir "./tempMD5"
+mkdir "./tempMD5/wordpress-$wpVersion"
+wget -P ./tempMD5/ "https://wordpress.org/wordpress-"$wpVersion".tar.gz"
+tar -xvz --xform s/wordpress// -f ./tempMD5/wordpress-4.7.tar.gz -C ./tempMD5/wordpress-4.7
+rm -rf ./tempMD5/wordpress-"$wpVersion".tar.gz
