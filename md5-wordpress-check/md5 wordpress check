@@ -1,10 +1,39 @@
 #!/bin/bash
 # md5 Hash Check and compare v0.1A
 
+echo
+#Where are we?!
+STARTING_DIR=$(pwd)
+
+#Removing any old results that can be an issue
+rm -rf $STARTING_DIR/tempMD5
+
+#We will check for the WP version, download, extract and delete the vanila archive
+echo "*************************************************************************"
+echo "Checking WordPress version and downloading correct vanila. Please wait..."
+echo "*************************************************************************"
+echo
 wpVersion=`find . -type f -name "readme.html" -exec grep -h '<br /> Version' {} + | awk -F " " '{print $4}'`
-echo $wpVersion
-mkdir "./tempMD5"
-mkdir "./tempMD5/wordpress-$wpVersion"
+mkdir -p "$STARTING_DIR/tempMD5"
+mkdir -p "$STARTING_DIR/tempMD5/wordpress-$wpVersion"
 wget -P ./tempMD5/ "https://wordpress.org/wordpress-"$wpVersion".tar.gz"
-tar -xvz --xform s/wordpress// -f ./tempMD5/wordpress-4.7.tar.gz -C ./tempMD5/wordpress-4.7
-rm -rf ./tempMD5/wordpress-"$wpVersion".tar.gz
+
+echo "****************************************************"
+echo "Extracting the vanila files and removing the archive"
+echo "****************************************************"
+echo
+
+tar -xz --xform s/wordpress// -f $STARTING_DIR/tempMD5/wordpress-4.7.tar.gz -C $STARTING_DIR/tempMD5/wordpress-4.7 2>/dev/null
+rm -rf $STARTING_DIR/tempMD5/wordpress-"$wpVersion".tar.gz
+
+#Now we will create list of the vanila WP files and their md5 sums
+
+find "$STARTING_DIR/tempMD5/wordpress-$wpVersion" ! -path "*/wp-content/*" -type f -name "*php*" -exec md5sum "{}" + > $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+find $STARTING_DIR ! -path "*/tempMD5/*" ! -path "*/wp-content/*" -type f -name "*php*" -exec md5sum "{}" + > $STARTING_DIR/tempMD5/activeFiles
+
+#Comparing the 2 files and find the chnaged and files that do not exist in the core files
+echo "***********************************************"
+echo "Checking for files that do not belong in vanila"
+echo "***********************************************"
+echo
+awk -F"/" 'FNR==NR{filearray[$1]=$NF; next }!($1 in filearray){printf "%s has a different md5sum or do not exist in the vanilla core files\n",$NF}' $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion $STARTING_DIR/tempMD5/activeFiles
