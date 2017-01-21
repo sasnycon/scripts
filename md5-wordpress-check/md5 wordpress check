@@ -4,6 +4,24 @@
 echo
 #Where are we?!
 STARTING_DIR=$(pwd)
+#Where is the WP Installaton?!
+echo "************************************************"
+echo "Where is the WP installation located from here?"
+echo 'examples:'
+echo 'public_html/website.com'
+echo 'public_html'
+echo 'wordpress'
+echo "************************************************"
+echo 'DO NOT PUT TRAILING SLASH!!'
+echo "************************************************"
+echo -n "WordPress installation path [ENTER]: "
+read WP_DIR
+if [ ! -f $WP_DIR/wp-config.php ]; then
+    echo "There is no working WP installation in $WP_DIR! Please check the correct path and try again!"
+else
+echo "Working WordPress instalation FOUND!"
+echo
+echo "Continuing with the check!"
 
 #Removing any old results that can be an issue
 rm -rf $STARTING_DIR/tempMD5
@@ -13,14 +31,12 @@ echo "*************************************************************************"
 echo "Checking WordPress version and downloading correct vanila. Please wait..."
 echo "*************************************************************************"
 echo
-wpVersion=`find . -type f -name "readme.html" -exec grep -h '<br /> Version' {} + | awk -F " " '{print $4}'`
+wpVersion=`grep -h '<br /> Version' $WP_DIR/readme.html | awk -F " " '{print $4}'`
 mkdir -p "$STARTING_DIR/tempMD5"
 mkdir -p "$STARTING_DIR/tempMD5/wordpress-$wpVersion"
 wget -P ./tempMD5/ "https://wordpress.org/wordpress-"$wpVersion".tar.gz"
 
-echo "****************************************************"
-echo "Extracting the vanila files and removing the archive"
-echo "****************************************************"
+echo "Extracting the vanila files and removing the archive..."
 echo
 
 tar -xz --xform s/wordpress// -f $STARTING_DIR/tempMD5/wordpress-4.7.tar.gz -C $STARTING_DIR/tempMD5/wordpress-4.7 2>/dev/null
@@ -28,12 +44,35 @@ rm -rf $STARTING_DIR/tempMD5/wordpress-"$wpVersion".tar.gz
 
 #Now we will create list of the vanila WP files and their md5 sums
 
-find "$STARTING_DIR/tempMD5/wordpress-$wpVersion" ! -path "*/wp-content/*" -type f -name "*php*" -exec md5sum "{}" + > $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
-find $STARTING_DIR ! -path "*/tempMD5/*" ! -path "*/wp-content/*" -type f -name "*php*" -exec md5sum "{}" + > $STARTING_DIR/tempMD5/activeFiles
+find "$STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-admin" -type f -exec md5sum "{}" + > $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+find "$STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-includes" -type f -exec md5sum "{}" + >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-trackback.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/xmlrpc.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-mail.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-settings.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-cron.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-load.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+md5sum $STARTING_DIR/tempMD5/wordpress-$wpVersion/wp-comments-post.php >> $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion
+
+find "$STARTING_DIR/$WP_DIR/wp-admin" -type f -exec md5sum "{}" + > $STARTING_DIR/tempMD5/activeFiles
+find "$STARTING_DIR/$WP_DIR/wp-includes" -type f -exec md5sum "{}" + >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-trackback.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/xmlrpc.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-mail.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-settings.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-cron.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-load.php >> $STARTING_DIR/tempMD5/activeFiles
+md5sum $STARTING_DIR/$WP_DIR/wp-comments-post.php >> $STARTING_DIR/tempMD5/activeFiles
 
 #Comparing the 2 files and find the chnaged and files that do not exist in the core files
-echo "***********************************************"
-echo "Checking for files that do not belong in vanila"
-echo "***********************************************"
+echo "Checking for files that do not belong in vanila..."
 echo
-awk -F"/" 'FNR==NR{filearray[$1]=$NF; next }!($1 in filearray){printf "%s has a different md5sum or do not exist in the vanilla core files\n",$NF}' $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion $STARTING_DIR/tempMD5/activeFiles
+echo "************************************************************************************ " > md5CheckResults.txt
+echo "The folowing files have a different md5sum or do not exist in the vanilla core files " >> md5CheckResults.txt
+echo "************************************************************************************ " >> md5CheckResults.txt
+echo " " >> md5CheckResults.txt
+awk -F"/" 'FNR==NR{filearray[$1]=$NF; next }!($1 in filearray){split($0,array," ");printf "%s \n",array[2]}' $STARTING_DIR/tempMD5/vanilaFiles-$wpVersion $STARTING_DIR/tempMD5/activeFiles >> md5CheckResults.txt
+echo "Done! You can find the results in md5CheckResults.txt file in this directory!"
+echo "Goodbye!"
+echo
+rm -rf $STARTING_DIR/tempMD5
