@@ -39,7 +39,7 @@ wget -P ./tempMD5/ "https://wordpress.org/wordpress-"$wpVersion".tar.gz"
 echo "Extracting the vanila files and removing the archive..."
 echo
 
-tar -xz --xform s/wordpress// -f $STARTING_DIR/tempMD5/wordpress-4.7.tar.gz -C $STARTING_DIR/tempMD5/wordpress-4.7 2>/dev/null
+tar -xz --xform s/wordpress// -f $STARTING_DIR/tempMD5/wordpress-$wpVersion.tar.gz -C $STARTING_DIR/tempMD5/wordpress-$wpVersion>/dev/null
 rm -rf $STARTING_DIR/tempMD5/wordpress-"$wpVersion".tar.gz
 
 #Now we will create list of the vanila WP files and their md5 sums
