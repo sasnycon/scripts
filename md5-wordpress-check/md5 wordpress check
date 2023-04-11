@@ -1,5 +1,5 @@
 #!/bin/bash
-# md5 Hash Check and compare v0.1A
+# md5 Hash Check and compare v0.2
 
 echo
 #Where are we?!
@@ -19,7 +19,8 @@ read WP_DIR
 if [ ! -f $WP_DIR/wp-config.php ]; then
     echo "There is no working WP installation in $WP_DIR! Please check the correct path and try again!"
 else
-echo "Working WordPress instalation FOUND!"
+echo "Installation FOUND!"
+echo "Work in progress..."
 echo
 echo "Continuing with the check!"
 
